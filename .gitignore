@@ -1,0 +1,13 @@
+.idea
+/media/
+/db.sqlite3
+*.pkl
+__pycache__/
+
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

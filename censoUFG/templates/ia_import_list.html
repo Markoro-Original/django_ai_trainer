@@ -1,0 +1,64 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>IA Import.html</title>
+</head>
+
+<body>
+    <h1>Arquivo Importado!</h1>
+    <div class="container">
+        <div class="row" style="line-height: 1;">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <table class="table table-striped table-hover">
+                    <th>id.</th>
+                    <th>NO_CURSO</th>
+                    <th>CO_CURSO</th>
+                    <th>NU_ANO_CENSO</th>
+                    <th>NO_REGIAO</th>
+                    <th>CO_REGIAO</th>
+                    <th>NO_UF</th>
+                    <th>SG_UF</th>
+                    <th>CO_UF</th>
+                    <th>NO_MUNICIPIO</th>
+                    <th>CO_MUNICIPIO</th>
+                    <th>IN_CAPITAL</th>
+                    <th>TP_DIMENSAO</th>
+                    <th>...</th>
+                    <th>QT_ING_MOB_ACADEMICA</th>
+                    <th>QT_MAT_MOB_ACADEMICA</th>
+                    <th>QT_CONC_MOB_ACADEMICA</th>
+                    {% for regs in dados %}
+                    <tr>
+                        <td>{{ regs.id }}</td>
+                        <td>{{ regs.NO_CURSO }}</td>
+                        <td>{{ regs.CO_CURSO }}</td>
+                        <td>{{ regs.NU_ANO_CENSO }}</td>
+                        <td>{{ regs.NO_REGIAO }}</td>
+                        <td>{{ regs.CO_REGIAO }}</td>
+                        <td>{{ regs.NO_UF }}</td>
+                        <td>{{ regs.SG_UF }}</td>
+                        <td>{{ regs.CO_UF }}</td>
+                        <td>{{ regs.NO_MUNICIPIO }}</td>
+                        <td>{{ regs.CO_MUNICIPIO }}</td>
+                        <td>{{ regs.IN_CAPITAL }}</td>
+                        <td>{{ regs.TP_DIMENSAO }}</td>
+                        <td>...</td>
+                        <td>{{ regs.QT_ING_MOB_ACADEMICA }}</td>
+                        <td>{{ regs.QT_MAT_MOB_ACADEMICA }}</td>
+                        <td>{{ regs.QT_CONC_MOB_ACADEMICA }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
