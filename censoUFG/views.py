@@ -194,31 +194,11 @@ def ia_knn_treino(request):
     return render(request, 'ia_knn_treino.html', data)
 
 def ia_knn_matriz(request):
-    print("Carregando dados do banco...")
-
-    # Carregar dados do banco
     dados_queryset = dados.objects.all()
-    if not dados_queryset.exists():
-        return HttpResponse("Erro: Nenhum dado encontrado no banco.")
-
     df = pd.DataFrame(list(dados_queryset.values()))
-    if df.empty:
-        return HttpResponse("Erro: DataFrame está vazio.")
 
-    print("Dados carregados com sucesso.")
-
-    # Verificar se a coluna QT_ING existe
-    if 'QT_ING' not in df.columns:
-        return HttpResponse("Erro: Coluna 'QT_ING' não encontrada nos dados.")
-
-    # Remover valores nulos da coluna QT_ING antes da categorização
-    df = df.dropna(subset=['QT_ING'])
-
-    # Criar a variável alvo (categorizar QT_ING)
     def categorizar_qt_ing(valor):
-        if pd.isna(valor) or valor is None:
-            return np.nan  # Usando NaN para remoção posterior
-        elif valor < 50:
+        if valor < 50:
             return 0
         elif 50 <= valor < 100:
             return 1
@@ -227,75 +207,35 @@ def ia_knn_matriz(request):
 
     df['QT_ING_CATEGORIA'] = df['QT_ING'].apply(categorizar_qt_ing)
 
-    # Remover linhas onde QT_ING_CATEGORIA ainda seja NaN
-    df = df.dropna(subset=['QT_ING_CATEGORIA'])
-
-    # Garantir que QT_ING_CATEGORIA seja um inteiro válido
-    df['QT_ING_CATEGORIA'] = df['QT_ING_CATEGORIA'].astype(int)
-
-    # Verificar se existem valores NaN ou None em QT_ING_CATEGORIA após a limpeza
-    if df['QT_ING_CATEGORIA'].isnull().any():
-        return HttpResponse("Erro: Ainda existem valores nulos em QT_ING_CATEGORIA.")
-
-    # Carregar o modelo treinado
     model_filename = 'knn_model.pkl'
-    try:
-        model_data = joblib.load(model_filename)
-        best_knn = model_data['model']
-        label_encoders = model_data['encoders']
-    except Exception as e:
-        return HttpResponse(f"Erro ao carregar o modelo: {str(e)}")
+    model_data = joblib.load(model_filename)
+    best_knn = model_data['model']
+    label_encoders = model_data['encoders']
 
     print("Modelo carregado com sucesso.")
 
-    # Definir as colunas categóricas que precisam ser transformadas
-    categorical_columns = [
-        'NO_REGIAO', 'NO_UF', 'SG_UF', 'NO_MUNICIPIO', 'NO_CURSO',
-        'NO_CINE_ROTULO', 'CO_CINE_ROTULO', 'CO_CINE_AREA_GERAL', 
-        'NO_CINE_AREA_GERAL', 'CO_CINE_AREA_ESPECIFICA', 
-        'NO_CINE_AREA_ESPECIFICA', 'CO_CINE_AREA_DETALHADA', 
-        'NO_CINE_AREA_DETALHADA'
-    ]
-
-    # Aplicar Label Encoding para todas as colunas categóricas
+    categorical_columns = ['NO_REGIAO', 'NO_UF', 'SG_UF', 'NO_MUNICIPIO', 'NO_CURSO',
+                           'NO_CINE_ROTULO', 'CO_CINE_ROTULO', 'CO_CINE_AREA_GERAL', 
+                           'NO_CINE_AREA_GERAL', 'CO_CINE_AREA_ESPECIFICA', 
+                           'NO_CINE_AREA_ESPECIFICA', 'CO_CINE_AREA_DETALHADA', 
+                           'NO_CINE_AREA_DETALHADA']
+    
     for col in categorical_columns:
         if col in df.columns:
-            if col in label_encoders:  # Se o encoder foi salvo no treinamento
-                df[col] = df[col].astype(str)  # Converter para string para evitar erros
-                df[col] = df[col].map(lambda x: label_encoders[col].transform([x])[0] if x in label_encoders[col].classes_ else -1)
-            else:  # Caso o LabelEncoder não tenha sido salvo para essa coluna
-                le = LabelEncoder()
-                df[col] = le.fit_transform(df[col].astype(str))
-                label_encoders[col] = le  # Atualiza os encoders
+            if col in label_encoders:
+                df[col] = label_encoders[col].transform(df[col].astype(str))
+            else:
+                return HttpResponse(f"Erro: LabelEncoder para {col} não encontrado no modelo.")
 
-    # Definir X (features) e y (target)
-    X = df.drop(columns=['QT_ING', 'QT_ING_CATEGORIA', 'id'])
+    x = df.drop(columns=['QT_ING', 'QT_ING_CATEGORIA', 'id'])
     y = df['QT_ING_CATEGORIA']
 
-    # Verificação final antes de passar para o modelo
-    if y.isnull().any() or (y == 'None').any():
-        return HttpResponse("Erro: y contém valores nulos ou 'None' após a limpeza.")
-
-    # Divisão treino e teste (apenas para avaliar a matriz de confusão)
-    _, X_test, _, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    # Fazer previsões no conjunto de teste
-    try:
-        y_pred = best_knn.predict(X_test)
-    except Exception as e:
-        return HttpResponse(f"Erro ao fazer previsões: {str(e)}")
-
-    # Gerar a matriz de confusão
-    cm = confusion_matrix(y_test, y_pred)
-
-    # Preparar os dados para o template
+    y_pred = best_knn.predict(x)
+    cm = confusion_matrix(y, y_pred)
     data = {
         'matrix': cm.tolist(),
         'labels': np.unique(y).tolist()
     }
-
-    print("Matriz de confusão gerada:")
     for i in data['matrix']:
         print(i)
-
     return render(request, 'ia_knn_matriz.html', data)
