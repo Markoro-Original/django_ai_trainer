@@ -5,20 +5,32 @@
 {% bootstrap_messages %}
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Curva ROC</title>
-</head>
+    <link rel="stylesheet" href="{% static 'css/roc.css' %}" />
+  </head>
 
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Curva ROC do Modelo KNN</h1>
-        <div class="text-center">
-            {{ graph|safe }}
+  <body>
+    <div class="header">
+      <h1>Curva ROC do Modelo KNN</h1>
+
+      <div class="button-container">
+        <div class="button-wrapper">
+          <a href="{% url 'ia_import' %}" class="custom-button">Home</a>
         </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_matriz' %}" class="custom-button">Modelo Matriz</a>
+        </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_recall' %}" class="custom-button">Modelo Recall</a>
+        </div>
+      </div>
     </div>
-</body>
 
+    <div class="container mt-5">
+      <div class="text-center">{{ graph|safe }}</div>
+    </div>
+  </body>
 </html>

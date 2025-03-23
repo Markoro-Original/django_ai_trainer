@@ -4,53 +4,70 @@
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
+<html lang="pt-br">
+  <head>
     <meta charset="UTF-8" />
     <title>IA Knn.html</title>
-</head>
+    <link rel="stylesheet" href="{% static 'css/knn.css' %}" />
+  </head>
 
-<body>
-    <h1>Dados do Treinamento - KNN</h1>
-    <div class="container">
-        <div class="row" style="line-height: 1;">
-            <div class="col-md-12 col-sm-12 col-xs-12">
-                <table class="table table-striped table-hover">
-                    <th>Descrição</th>
-                    <th>Valor</th>
-                    <tr>
-                        <td>Dataset:</td>
-                        <td>{{ dataset }}</td>
-                    </tr>
-                    <tr>
-                        <td>Treino:</td>
-                        <td>{{ treino }}</td>
-                    </tr>
-                    <tr>
-                        <td>Teste:</td>
-                        <td>{{ teste }}</td>
-                    </tr>
-                    <tr>
-                        <td>Validação:</td>
-                        <td>{{ validacao }}</td>
-                    </tr>
-                    <tr>
-                        <td>Acurácia da Validação:</td>
-                        <td>{{ acc_validacao }}%</td>
-                    </tr>
-                    <tr>
-                        <td>Acurácia do Teste:</td>
-                        <td>{{ acc_teste }}%</td>
-                    </tr>
-                    <tr>
-                        <td>Modelo Salvo em:</td>
-                        <td>{{ file }}</td>
-                    </tr>
-                </table>
-            </div>
+  <body>
+    <div class="header">
+      <h1>Dados do Treinamento - KNN</h1>
+
+      <div class="button-container">
+        <div class="button-wrapper">
+          <a href="{% url 'ia_import' %}" class="custom-button">Home</a>
         </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_recall' %}" class="custom-button">Modelo Recall</a>
+        </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_matriz' %}" class="custom-button">Modelo Matriz</a>
+        </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_roc' %}" class="custom-button">Modelo ROC</a>
+        </div>
+      </div>
     </div>
-</body>
 
+    <div class="container">
+      <div class="row" style="line-height: 1;">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <table class="table table-striped table-hover">
+            <th>Descrição</th>
+            <th>Valor</th>
+            <tr>
+              <td>Dataset:</td>
+              <td>{{ dataset }}</td>
+            </tr>
+            <tr>
+              <td>Treino:</td>
+              <td>{{ treino }}</td>
+            </tr>
+            <tr>
+              <td>Teste:</td>
+              <td>{{ teste }}</td>
+            </tr>
+            <tr>
+              <td>Validação:</td>
+              <td>{{ validacao }}</td>
+            </tr>
+            <tr>
+              <td>Acurácia da Validação:</td>
+              <td>{{ acc_validacao }}%</td>
+            </tr>
+            <tr>
+              <td>Acurácia do Teste:</td>
+              <td>{{ acc_teste }}%</td>
+            </tr>
+            <tr>
+              <td>Modelo Salvo em:</td>
+              <td>{{ file }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

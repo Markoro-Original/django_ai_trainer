@@ -5,56 +5,77 @@
 {% bootstrap_messages %}
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Matriz de Confusão</title>
-</head>
+    <link rel="stylesheet" href="{% static 'css/matriz.css' %}" /> <!-- Link para o arquivo CSS -->
+  </head>
 
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Matriz de Confusão</h1>
-        <p class="text-center">Exibindo a matriz de confusão gerada pelo modelo</p>
-        <table class="table table-bordered table-striped table-hover table-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th></th>
-                    {% for coluna in labels %}
-                    <th class="text-center">
-                        {% if coluna == 0 %}
-                        0 a 49
-                        {% endif %}
-                        {% if coluna == 1 %}
-                        50 a 100
-                        {% endif %}
-                        {% if coluna == 2 %}
-                        >100
-                        {% endif %}
-                    </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in matrix %}
-                <tr>
-                    {% if forloop.counter == 1 %}
-                    <th class="text-center">0 a 49</th>
-                    {% endif %}
-                    {% if forloop.counter == 2 %}
-                    <th class="text-center">50 a 99</th>
-                    {% endif %}
-                    {% if forloop.counter == 3 %}
-                    <th class="text-center">>100</th>
-                    {% endif %}
-                    {% for value in row %}
-                    <td class="text-center">{{ value }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <body>
+    <div class="header">
+      <h1>Matriz de Confusão</h1>
+
+      <div class="button-container">
+        <div class="button-wrapper">
+          <a href="{% url 'ia_import' %}" class="custom-button">Home</a>
+        </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_recall' %}" class="custom-button">Modelo Recall</a>
+        </div>
+        <div class="button-wrapper">
+          <a href="{% url 'ia_knn_roc' %}" class="custom-button">Modelo ROC</a>
+        </div>
+      </div>
     </div>
-</body>
 
+    <div class="container mt-5">
+      <p class="text-center mb-4">Exibindo a matriz de confusão gerada pelo modelo</p>
+
+      <!-- Container para a tabela com scroll horizontal -->
+      <div class="table-container">
+        <table class="table table-bordered table-striped table-hover table-sm">
+          <thead class="table-dark">
+            <tr>
+              <th scope="col"></th> <!-- Célula vazia no canto superior esquerdo -->
+              {% for coluna in labels %}
+                <th scope="col" class="text-center">
+                  {% if coluna == 0 %}
+                    0 a 49
+                  {% endif %}
+                  {% if coluna == 1 %}
+                    50 a 100
+                  {% endif %}
+                  {% if coluna == 2 %}
+                    >100
+                  {% endif %}
+                </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in matrix %}
+              <tr>
+                <!-- Adiciona o rótulo da linha -->
+                {% if forloop.counter == 1 %}
+                  <th scope="row" class="text-center">0 a 49</th>
+                {% endif %}
+                {% if forloop.counter == 2 %}
+                  <th scope="row" class="text-center">50 a 99</th>
+                {% endif %}
+                {% if forloop.counter == 3 %}
+                  <th scope="row" class="text-center">>100</th>
+                {% endif %}
+
+                <!-- Preenche os valores da matriz -->
+                {% for value in row %}
+                  <td class="text-center">{{ value }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
 </html>

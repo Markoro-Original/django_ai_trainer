@@ -1,0 +1,13 @@
+body {
+  background-image: url('../images/background.jpg');
+}
+
+/* Centraliza o container e define uma largura máxima */
+.login-container {
+  max-width: 400px;
+  margin: 200px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
