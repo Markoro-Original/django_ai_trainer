@@ -5,7 +5,7 @@ from django.core.files.storage import FileSystemStorage
 import pandas as pd
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc
+from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc, precision_recall_curve
 from sklearn.preprocessing import LabelEncoder
 import joblib
 import re
@@ -317,3 +317,80 @@ def ia_knn_roc(request):
     graph = fig.to_html(full_html=False)
 
     return render(request, 'ia_knn_roc.html', {'graph': graph})
+
+def ia_knn_recall(request):
+    dados_queryset = dados.objects.all()
+    df = pd.DataFrame(list(dados_queryset.values()))
+
+    def categorizar_qt_ing(valor):
+        if valor < 50:
+            return 0
+        elif 50 <= valor < 100:
+            return 1
+        else:
+            return 2
+
+    df['QT_ING_CATEGORIA'] = df['QT_ING'].apply(categorizar_qt_ing)
+
+    model_filename = 'knn_model.pkl'
+    model_data = joblib.load(model_filename)
+    best_knn = model_data['model']
+    label_encoders = model_data['encoders']
+
+    print("Modelo carregado com sucesso.")
+
+    categorical_columns = ['NO_REGIAO', 'NO_UF', 'SG_UF', 'NO_MUNICIPIO', 'NO_CURSO',
+                           'NO_CINE_ROTULO', 'CO_CINE_ROTULO', 'CO_CINE_AREA_GERAL', 
+                           'NO_CINE_AREA_GERAL', 'CO_CINE_AREA_ESPECIFICA', 
+                           'NO_CINE_AREA_ESPECIFICA', 'CO_CINE_AREA_DETALHADA', 
+                           'NO_CINE_AREA_DETALHADA']
+    
+    for col in categorical_columns:
+        if col in df.columns:
+            if col in label_encoders:
+                df[col] = label_encoders[col].transform(df[col].astype(str))
+            else:
+                return HttpResponse(f"Erro: LabelEncoder para {col} não encontrado no modelo.")
+
+    x = df.drop(columns=['QT_ING', 'QT_ING_CATEGORIA', 'id'])
+    y = df['QT_ING_CATEGORIA']
+
+    y_pred_prob = best_knn.predict_proba(x)
+
+    precision = {}
+    recall = {}
+    pr_auc = {}
+
+    for i in range(3):
+        precision[i], recall[i], _ = precision_recall_curve(y == i, y_pred_prob[:, i])
+        pr_auc[i] = auc(recall[i], precision[i])
+
+    fig = go.Figure()
+
+    for i in range(3):
+        fig.add_trace(go.Scatter(
+            x=recall[i], 
+            y=precision[i], 
+            mode='lines', 
+            name=f'Classe {i} (AUC = {pr_auc[i]:.2f})',
+            line=dict(color=f'rgba({(i*100)}, {(i*100+50)}, 255, 0.8)')
+        ))
+
+    fig.add_trace(go.Scatter(
+        x=[0, 1], 
+        y=[0, 1], 
+        mode='lines', 
+        name='Classificador Aleatório',
+        line=dict(dash='dash', color='gray')
+    ))
+
+    fig.update_layout(
+        title='Curva Precision-Recall Multiclasse',
+        xaxis_title='Recall',
+        yaxis_title='Precisão',
+        showlegend=True
+    )
+
+    graph = fig.to_html(full_html=False)
+
+    return render(request, 'ia_knn_recall.html', {'graph': graph})
