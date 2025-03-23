@@ -33,22 +33,22 @@ def ia_import_save(request):
                 #cells = row.split(',')
                 cells = re.split(',|;', row)
 
-                def safe_int(value, default=None):
+                def safe_int(value, default=0):
                     return int(value) if value.strip() else default
                 
                 dados.objects.create(
-                    NU_ANO_CENSO = safe_int(cells[0]), NO_REGIAO=cells[1].strip() if cells[1].strip() else None,
-                    CO_REGIAO = safe_int(cells[2]), NO_UF=cells[3].strip() if cells[3].strip() else None,
-                    SG_UF=cells[4].strip() if cells[4].strip() else None,
-                    CO_UF = safe_int(cells[5]), NO_MUNICIPIO=cells[6].strip() if cells[6].strip() else None,
+                    NU_ANO_CENSO = safe_int(cells[0]), NO_REGIAO=cells[1].strip() if cells[1].strip() else "-",
+                    CO_REGIAO = safe_int(cells[2]), NO_UF=cells[3].strip() if cells[3].strip() else "-",
+                    SG_UF=cells[4].strip() if cells[4].strip() else "-",
+                    CO_UF = safe_int(cells[5]), NO_MUNICIPIO=cells[6].strip() if cells[6].strip() else "-",
                     CO_MUNICIPIO = safe_int(cells[7]), IN_CAPITAL = safe_int(cells[8]), TP_DIMENSAO = safe_int(cells[9]),
                     TP_ORGANIZACAO_ACADEMICA = safe_int(cells[10]), TP_REDE = safe_int(cells[11]), TP_CATEGORIA_ADMINISTRATIVA = safe_int(cells[12]),
-                    CO_IES = safe_int(cells[13]), NO_CURSO=cells[14].strip() if cells[14].strip() else None,
-                    CO_CURSO = safe_int(cells[15]), NO_CINE_ROTULO = cells[16].strip() if cells[16].strip() else None,
-                    CO_CINE_ROTULO = cells[17].strip() if cells[17].strip() else None, CO_CINE_AREA_GERAL = cells[18].strip() if cells[18].strip() else None,
-                    NO_CINE_AREA_GERAL = cells[19].strip() if cells[19].strip() else None, CO_CINE_AREA_ESPECIFICA = cells[20].strip() if cells[20].strip() else None,
-                    NO_CINE_AREA_ESPECIFICA = cells[21].strip() if cells[21].strip() else None, CO_CINE_AREA_DETALHADA = cells[22].strip() if cells[22].strip() else None,
-                    NO_CINE_AREA_DETALHADA = cells[23].strip() if cells[23].strip() else None,
+                    CO_IES = safe_int(cells[13]), NO_CURSO=cells[14].strip() if cells[14].strip() else "-",
+                    CO_CURSO = safe_int(cells[15]), NO_CINE_ROTULO = cells[16].strip() if cells[16].strip() else "-",
+                    CO_CINE_ROTULO = cells[17].strip() if cells[17].strip() else "-", CO_CINE_AREA_GERAL = cells[18].strip() if cells[18].strip() else "-",
+                    NO_CINE_AREA_GERAL = cells[19].strip() if cells[19].strip() else "-", CO_CINE_AREA_ESPECIFICA = cells[20].strip() if cells[20].strip() else "-",
+                    NO_CINE_AREA_ESPECIFICA = cells[21].strip() if cells[21].strip() else "-", CO_CINE_AREA_DETALHADA = cells[22].strip() if cells[22].strip() else "-",
+                    NO_CINE_AREA_DETALHADA = cells[23].strip() if cells[23].strip() else "-",
                     TP_GRAU_ACADEMICO = safe_int(cells[24]), IN_GRATUITO = safe_int(cells[25]), TP_MODALIDADE_ENSINO = safe_int(cells[26]), TP_NIVEL_ACADEMICO = safe_int(cells[27]),
                     QT_CURSO = safe_int(cells[28]), QT_VG_TOTAL = safe_int(cells[29]), QT_VG_TOTAL_DIURNO = safe_int(cells[30]), QT_VG_TOTAL_NOTURNO = safe_int(cells[31]),
                     QT_VG_TOTAL_EAD = safe_int(cells[32]), QT_VG_NOVA = safe_int(cells[33]), QT_VG_PROC_SELETIVO = safe_int(cells[34]), QT_VG_REMANESC = safe_int(cells[35]),
@@ -192,3 +192,110 @@ def ia_knn_treino(request):
     data['file'] = model_filename
 
     return render(request, 'ia_knn_treino.html', data)
+
+def ia_knn_matriz(request):
+    print("Carregando dados do banco...")
+
+    # Carregar dados do banco
+    dados_queryset = dados.objects.all()
+    if not dados_queryset.exists():
+        return HttpResponse("Erro: Nenhum dado encontrado no banco.")
+
+    df = pd.DataFrame(list(dados_queryset.values()))
+    if df.empty:
+        return HttpResponse("Erro: DataFrame está vazio.")
+
+    print("Dados carregados com sucesso.")
+
+    # Verificar se a coluna QT_ING existe
+    if 'QT_ING' not in df.columns:
+        return HttpResponse("Erro: Coluna 'QT_ING' não encontrada nos dados.")
+
+    # Remover valores nulos da coluna QT_ING antes da categorização
+    df = df.dropna(subset=['QT_ING'])
+
+    # Criar a variável alvo (categorizar QT_ING)
+    def categorizar_qt_ing(valor):
+        if pd.isna(valor) or valor is None:
+            return np.nan  # Usando NaN para remoção posterior
+        elif valor < 50:
+            return 0
+        elif 50 <= valor < 100:
+            return 1
+        else:
+            return 2
+
+    df['QT_ING_CATEGORIA'] = df['QT_ING'].apply(categorizar_qt_ing)
+
+    # Remover linhas onde QT_ING_CATEGORIA ainda seja NaN
+    df = df.dropna(subset=['QT_ING_CATEGORIA'])
+
+    # Garantir que QT_ING_CATEGORIA seja um inteiro válido
+    df['QT_ING_CATEGORIA'] = df['QT_ING_CATEGORIA'].astype(int)
+
+    # Verificar se existem valores NaN ou None em QT_ING_CATEGORIA após a limpeza
+    if df['QT_ING_CATEGORIA'].isnull().any():
+        return HttpResponse("Erro: Ainda existem valores nulos em QT_ING_CATEGORIA.")
+
+    # Carregar o modelo treinado
+    model_filename = 'knn_model.pkl'
+    try:
+        model_data = joblib.load(model_filename)
+        best_knn = model_data['model']
+        label_encoders = model_data['encoders']
+    except Exception as e:
+        return HttpResponse(f"Erro ao carregar o modelo: {str(e)}")
+
+    print("Modelo carregado com sucesso.")
+
+    # Definir as colunas categóricas que precisam ser transformadas
+    categorical_columns = [
+        'NO_REGIAO', 'NO_UF', 'SG_UF', 'NO_MUNICIPIO', 'NO_CURSO',
+        'NO_CINE_ROTULO', 'CO_CINE_ROTULO', 'CO_CINE_AREA_GERAL', 
+        'NO_CINE_AREA_GERAL', 'CO_CINE_AREA_ESPECIFICA', 
+        'NO_CINE_AREA_ESPECIFICA', 'CO_CINE_AREA_DETALHADA', 
+        'NO_CINE_AREA_DETALHADA'
+    ]
+
+    # Aplicar Label Encoding para todas as colunas categóricas
+    for col in categorical_columns:
+        if col in df.columns:
+            if col in label_encoders:  # Se o encoder foi salvo no treinamento
+                df[col] = df[col].astype(str)  # Converter para string para evitar erros
+                df[col] = df[col].map(lambda x: label_encoders[col].transform([x])[0] if x in label_encoders[col].classes_ else -1)
+            else:  # Caso o LabelEncoder não tenha sido salvo para essa coluna
+                le = LabelEncoder()
+                df[col] = le.fit_transform(df[col].astype(str))
+                label_encoders[col] = le  # Atualiza os encoders
+
+    # Definir X (features) e y (target)
+    X = df.drop(columns=['QT_ING', 'QT_ING_CATEGORIA', 'id'])
+    y = df['QT_ING_CATEGORIA']
+
+    # Verificação final antes de passar para o modelo
+    if y.isnull().any() or (y == 'None').any():
+        return HttpResponse("Erro: y contém valores nulos ou 'None' após a limpeza.")
+
+    # Divisão treino e teste (apenas para avaliar a matriz de confusão)
+    _, X_test, _, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Fazer previsões no conjunto de teste
+    try:
+        y_pred = best_knn.predict(X_test)
+    except Exception as e:
+        return HttpResponse(f"Erro ao fazer previsões: {str(e)}")
+
+    # Gerar a matriz de confusão
+    cm = confusion_matrix(y_test, y_pred)
+
+    # Preparar os dados para o template
+    data = {
+        'matrix': cm.tolist(),
+        'labels': np.unique(y).tolist()
+    }
+
+    print("Matriz de confusão gerada:")
+    for i in data['matrix']:
+        print(i)
+
+    return render(request, 'ia_knn_matriz.html', data)

@@ -1,0 +1,60 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matriz de Confusão</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Matriz de Confusão</h1>
+        <p class="text-center">Exibindo a matriz de confusão gerada pelo modelo</p>
+        <table class="table table-bordered table-striped table-hover table-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th></th>
+                    {% for coluna in labels %}
+                    <th class="text-center">
+                        {% if coluna == 0 %}
+                        0 a 50
+                        {% endif %}
+                        {% if coluna == 1 %}
+                        50 a 100
+                        {% endif %}
+                        {% if coluna == 2 %}
+                        >100
+                        {% endif %}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in matrix %}
+                <tr>
+                    {% if forloop.counter == 1 %}
+                    <th class="text-center">0 a 50</th>
+                    {% endif %}
+                    {% if forloop.counter == 2 %}
+                    <th class="text-center">50 a 100</th>
+                    {% endif %}
+                    {% if forloop.counter == 3 %}
+                    <th class="text-center">>100</th>
+                    {% endif %}
+                    {% for value in row %}
+                    <td class="text-center">{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
