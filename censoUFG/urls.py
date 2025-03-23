@@ -8,5 +8,6 @@ urlpatterns = [
     path('ia_import_save', views.ia_import_save, name='ia_import_save'),
     path('ia_import_list', views.ia_import_list, name='ia_import_list'),
     path('ia_knn_treino', views.ia_knn_treino, name='ia_knn_treino'),
-    path('ia_knn_matriz', views.ia_knn_matriz, name='ia_knn_matriz')
+    path('ia_knn_matriz', views.ia_knn_matriz, name='ia_knn_matriz'),
+    path('ia_knn_roc', views.ia_knn_roc, name='ia_knn_roc')
 ]
