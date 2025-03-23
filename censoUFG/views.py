@@ -11,6 +11,7 @@ import joblib
 import re
 import numpy as np
 import plotly.graph_objects as go
+import csv
 
 
 
@@ -193,6 +194,20 @@ def ia_knn_treino(request):
     data['file'] = model_filename
 
     return render(request, 'ia_knn_treino.html', data)
+
+def ia_export(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="dados_exportados.csv"'
+    
+    writer = csv.writer(response)
+    
+    field_names = [field.name for field in dados._meta.fields if field.name != 'id']
+    writer.writerow(field_names)
+
+    for obj in dados.objects.all():
+        writer.writerow([getattr(obj, field.name) for field in dados._meta.fields if field.name != 'id'])
+
+    return response
 
 def ia_knn_matriz(request):
     dados_queryset = dados.objects.all()

@@ -3,7 +3,7 @@
 /db.sqlite3
 *.pkl
 __pycache__/
-
+dados_exportados*
 .env
 .venv
 env/
