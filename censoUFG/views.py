@@ -23,7 +23,7 @@ def ia_import_save(request):
         file1 = fss.save(upload.name, upload)
         file_url = fss.url(file1)
         
-        dados.objects.all().delete
+        dados.objects.all().delete()
         
         i = 0
         file2 = open(file1, 'r')
