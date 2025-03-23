@@ -1,18 +1,43 @@
+{% load bootstrap5 %}
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <title>IA Import.html</title>
+    <meta charset="UTF-8">
+    <title>Upload de Arquivo</title>
+    {% bootstrap_css %}
+    <style>
+        body {
+            background-color: #f0f4f8;
+        }
+        .upload-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .custom-btn {
+            width: 100%;
+        }
+    </style>
 </head>
-
 <body>
-    <h1>Upload / Import Arquivo!</h1>
-    <form method="post" enctype="multipart/form-data" action="{% url 'ia_import_save' %}">
-        {% csrf_token %}
-        <input type="file" name="arq_upload" />
-        <button type="submit">Upload</button>
-    </form>
+    <div class="upload-container">
+        <h1>Upload / Import Arquivo</h1>
+        <form method="post" enctype="multipart/form-data" action="{% url 'ia_import_save' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="file" name="arq_upload" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary custom-btn">Upload</button>
+        </form>
+    </div>
+    {% bootstrap_javascript %}
 </body>
-
 </html>
