@@ -1,0 +1,33 @@
+{% load bootstrap5 %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    {% bootstrap_css %}
+    <style>
+        /* Centraliza o container e define uma largura máxima */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<div class="container login-container">
+    <h2 class="text-center">Login</h2>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+        </div>
+    </form>
+</div>
+{% bootstrap_javascript %}
+</body>
+</html>

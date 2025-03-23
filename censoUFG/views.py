@@ -1,12 +1,17 @@
 from django.shortcuts import render, redirect, HttpResponse
-from .models import dados
-import os
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-import pandas as pd
+from .models import dados
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc, precision_recall_curve
 from sklearn.preprocessing import LabelEncoder
+
+import pandas as pd
+import os
 import joblib
 import re
 import numpy as np
@@ -14,10 +19,29 @@ import plotly.graph_objects as go
 import csv
 
 
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            # Após login, redirecione para a página ia_import
+            return redirect('ia_import')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
 
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
+@login_required
 def ia_import(request):
     return render(request, 'ia_import.html')
 
+
+@login_required
 def ia_import_save(request):
     if request.method == 'POST' and request.FILES['arq_upload']:
         fss = FileSystemStorage()
@@ -105,11 +129,15 @@ def ia_import_save(request):
         os.remove(file_url.replace("/", ""))
     return redirect('ia_import_list')
 
+
+@login_required
 def ia_import_list(request):
     data = {}
     data['dados'] = dados.objects.all()
     return render(request, 'ia_import_list.html', data)
 
+
+@login_required
 def ia_knn_treino(request):
     data = {}
     print("Vamos ao que interessa...")
@@ -195,6 +223,8 @@ def ia_knn_treino(request):
 
     return render(request, 'ia_knn_treino.html', data)
 
+
+@login_required
 def ia_export(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="dados_exportados.csv"'
@@ -209,6 +239,8 @@ def ia_export(request):
 
     return response
 
+
+@login_required
 def ia_knn_matriz(request):
     dados_queryset = dados.objects.all()
     df = pd.DataFrame(list(dados_queryset.values()))
@@ -256,6 +288,8 @@ def ia_knn_matriz(request):
         print(i)
     return render(request, 'ia_knn_matriz.html', data)
 
+
+@login_required
 def ia_knn_roc(request):
     dados_queryset = dados.objects.all()
     df = pd.DataFrame(list(dados_queryset.values()))
@@ -333,6 +367,8 @@ def ia_knn_roc(request):
 
     return render(request, 'ia_knn_roc.html', {'graph': graph})
 
+
+@login_required
 def ia_knn_recall(request):
     dados_queryset = dados.objects.all()
     df = pd.DataFrame(list(dados_queryset.values()))
