@@ -18,19 +18,27 @@ source nome_da_venv/bin/activate  # Para Linux/macOS
 
 ### **Com o ambiente virtual ativado**:
 - Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
+  ```bash
+  pip install -r requirements.txt
+  ```
 - Faça as migrações necessárias:
-```bash
-python manage.py migrate
-```
+  ```bash
+  python manage.py migrate
+  ```
+- Crie um superusuário (para criar o login e acessar a aplicação):
+  ```bash
+  python manage.py createsuperuser
+  ```
+  Ao executar, utilize as seguintes informações:
+  - **Username:** admin
+  - **Email address:** admin@gmail.com
+  - **Password:** admin
 - Rode o servidor localmente:
-```bash
-python manage.py runserver
-```
+  ```bash
+  python manage.py runserver
+  ```
 
-## **Credenciais padrão**
+### **Credenciais padrão**
 
 Para acessar a aplicação, utilize as seguintes credenciais:
 
