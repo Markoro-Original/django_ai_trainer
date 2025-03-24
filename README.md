@@ -1,5 +1,7 @@
 # django_ai_trainer
 
+Link pro repositório: https://github.com/Markoro-Original/django_ai_trainer
+
 ## **Rodando o projeto**
 
 #### Crie e ative o ambiente virtual
